@@ -1,0 +1,28 @@
+[project]
+name = "nmk"
+version = "0.1.0"
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "underpyx",
+    "pydmpro",
+    "dddx",
+    "python-dotenv",
+    "python-json-logger",
+    "sqlalchemy",
+    "psycopg[binary]",
+    "alembic",
+    "fastapi",
+    "uvicorn",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "assertpy",
+    "httpx",
+]
+
+[tool.setuptools]
+package-dir = {"" = "src"}
