@@ -30,7 +30,11 @@ class App:
 
         App.__boot_modules()
 
-        app = FastAPI()
+        app = FastAPI(
+            title="NMK API",
+            version="1.0.0",
+            description="NMK backend — Identity and beyond.",
+        )
         App.__configure_routes(app)
 
         return app
