@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from mediatr import Mediator
 from ddd import Clock
+from ddd.application import Command
 
 from framework.domain import Email
 from identity.domain import UserRepository, User
@@ -14,7 +15,7 @@ class UserAlreadyExists(RuntimeError):
 
 
 @dataclass(frozen=True)
-class RegisterUserCommand:
+class RegisterUserCommand(Command):
     email: Email
     password: str
 

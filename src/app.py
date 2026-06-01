@@ -2,6 +2,7 @@ from pydm import ServiceContainer, EnvParametersBag
 from ddd import Clock
 from ddd.infrastructure import SystemClock
 from dotenv import load_dotenv
+from fastapi import FastAPI
 
 from framework.infrastructure import DatabaseConnection, Module
 from identity import IdentityModule
@@ -11,7 +12,7 @@ class App:
     __MODULES: tuple[Module] = (IdentityModule,)
 
     @staticmethod
-    def boot() -> None:
+    def boot() -> FastAPI:
         service_container: ServiceContainer = ServiceContainer.get_instance()
 
         load_dotenv()
@@ -27,5 +28,20 @@ class App:
             'password': 'DB_PASSWORD',
         })
 
+        App.__boot_modules()
+
+        app = FastAPI()
+        App.__configure_routes(app)
+
+        return app
+
+    @staticmethod
+    def __boot_modules() -> None:
         for module in App.__MODULES:
             module.boot()
+
+    @staticmethod
+    def __configure_routes(app: FastAPI) -> None:
+        for module in App.__MODULES:
+            for router in module.get_routers():
+                app.include_router(router)
