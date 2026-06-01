@@ -78,6 +78,7 @@ src/
 │   ├── domain/                 # DomainException
 │   │   └── value/              # Email
 │   └── infrastructure/         # App bootstrap, Module, DatabaseConnection
+│       ├── cqrs/               # CommandBus
 │       └── persistence/        # SQLAlchemyBaseRepository, mapper, types
 │
 └── identity/                   # User registration
@@ -87,6 +88,8 @@ src/
     ├── application/
     │   └── command/            # RegisterUserCommand + handler
     └── infrastructure/         # IdentityModule
+        ├── http/
+        │   └── controller/     # FastAPI routers
         └── persistence/        # SQLAlchemyUserRepository, mapper, tables
 ```
 
@@ -119,7 +122,7 @@ Domain exceptions extend `DomainException` in `framework/domain/exception.py`.
 
 ```bash
 # 1. Install dependencies
-pip install -e ".[dev]"
+make install
 
 # 2. Configure environment
 cp .env.example .env
@@ -129,7 +132,7 @@ cp .env.example .env
 alembic upgrade head
 
 # 4. Start the dev server
-uvicorn main:app --reload
+make dev
 ```
 
 ---
@@ -138,8 +141,12 @@ uvicorn main:app --reload
 
 | Command | Description |
 |---|---|
-| `pytest` | Run unit tests |
-| `uvicorn main:app --reload` | Start with hot reload |
+| `make install` | Install dependencies |
+| `make dev` | Start with hot reload on :8000 |
+| `make start` | Start in production mode on :8000 |
+| `make test` | Run unit tests |
+| `make lint` | Lint with ruff |
+| `make format` | Format with ruff |
 | `alembic upgrade head` | Apply pending migrations |
 | `alembic revision --autogenerate -m "..."` | Create a new migration |
 | `alembic current` | Show migration status |
