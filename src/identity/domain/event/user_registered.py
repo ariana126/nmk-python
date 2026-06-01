@@ -1,5 +1,4 @@
-from ddd import DomainEvent
-from sqlalchemy.sql.schema import Identity
+from ddd import DomainEvent, Identity
 
 
 class UserRegistered(DomainEvent):
