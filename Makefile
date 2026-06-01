@@ -1,4 +1,4 @@
-.PHONY: install dev start test lint format
+.PHONY: install dev start test lint format migrate migrate-create migrate-down migrate-history
 
 install:
 	pip install -e ".[dev]"
@@ -17,3 +17,15 @@ lint:
 
 format:
 	ruff format .
+
+migrate:
+	PYTHONPATH=src .venv/bin/alembic upgrade head
+
+migration-create:
+	PYTHONPATH=src .venv/bin/alembic revision --autogenerate -m "$(m)"
+
+migrate-rollback:
+	PYTHONPATH=src .venv/bin/alembic downgrade -1
+
+migration-history:
+	PYTHONPATH=src .venv/bin/alembic history --verbose
