@@ -21,7 +21,6 @@ dependencies = [
 dev = [
     "pytest",
     "assertpy",
-    "httpx",
 ]
 
 [tool.setuptools]
