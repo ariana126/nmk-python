@@ -102,7 +102,7 @@ Domain events are recorded on the aggregate via `_record_that(event)` (from `Agg
 
 Test files are co-located with source using the `_test.py` suffix convention (e.g., `email_test.py` next to `email.py`). Tests use `pytest` + `assertpy`. `pytest` is configured via `pyproject.toml` and discovers tests automatically from `src/`.
 
-BDD tests live under `features/step_definitions/<context>/` and follow the same `_test.py` suffix convention (e.g., `register_test.py`). Shared steps go in `features/step_definitions/common/` named after the concern they cover (e.g., `http_steps.py`). Run unit tests with `make test` and BDD tests with `make bdd`.
+BDD tests live under `features/`. Run unit tests with `make test` and BDD tests with `make bdd`. See `features/CLAUDE.md` for conventions, fixtures, and how to add new feature specs.
 
 ### Adding a new bounded context
 
