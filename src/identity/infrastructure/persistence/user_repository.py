@@ -13,6 +13,7 @@ class SQLAlchemyUserRepository(UserRepository, SQLAlchemyBaseRepository):
         return User
 
     def find_by_email(self, email: Email) -> User | None:
-        return self.connection.get_session().execute(
-            select(User).where(users_table.c.email == email)
-        ).scalar_one_or_none()
+        with self.connection.get_session() as session:
+            return session.execute(
+                select(User).where(users_table.c.email == email)
+            ).scalar_one_or_none()

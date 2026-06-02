@@ -1,4 +1,4 @@
-.PHONY: install dev start test lint format migrate migrate-create migrate-down migrate-history
+.PHONY: install dev start test bdd lint format migrate migrate-create migrate-down migrate-history
 
 install:
 	pip install -e ".[dev]"
@@ -10,7 +10,10 @@ start:
 	uvicorn src.main:app --host 0.0.0.0 --port 8000
 
 test:
-	pytest
+	PYTHONPATH=src .venv/bin/pytest src/
+
+bdd:
+	PYTHONPATH=src .venv/bin/pytest features/ -v
 
 lint:
 	ruff check .

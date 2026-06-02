@@ -22,7 +22,13 @@ dependencies = [
 dev = [
     "pytest",
     "assertpy",
+    "pytest-bdd",
+    "httpx2",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["src"]
+pythonpath = ["."]
 
 [tool.setuptools]
 package-dir = {"" = "src"}

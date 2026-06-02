@@ -14,7 +14,7 @@ class UserAlreadyExists(RuntimeError):
         return UserAlreadyExists(f"User {email.as_string} already exists.")
 
 
-@dataclass(frozen=True)
+@dataclass
 class RegisterUserCommand(Command):
     email: Email
     password: str
@@ -31,7 +31,7 @@ class RegisterUserCommandHandler:
         new_user = User.register(cmd.email, cmd.password, self.__clock.now())
         self.__user_repository.save(new_user)
 
-    def __validate_user_is_not_exists(self, email: Email) -> bool:
+    def __validate_user_is_not_exists(self, email: Email) -> None:
         user: User|None = self.__user_repository.find_by_email(email)
         if not user is None:
             raise UserAlreadyExists.with_email(email)
