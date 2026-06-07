@@ -1,4 +1,3 @@
-import pytest
 from pytest_bdd import given, then, parsers
 
 
@@ -29,9 +28,7 @@ def response_should_be_valid_problem_detail(context):
     prefix = "https://my-api-doc.dev/problems/"
     assert type_val == "about:blank" or (
         type_val.startswith(prefix) and len(type_val) > len(prefix)
-    ), (
-        f'Expected "type" to be "about:blank" or "{prefix}<uri>". Body: {body}'
-    )
+    ), f'Expected "type" to be "about:blank" or "{prefix}<uri>". Body: {body}'
     assert isinstance(body.get("title"), str) and len(body["title"]) > 0, (
         f'Expected "title" to be a non-empty string. Body: {body}'
     )
@@ -47,9 +44,7 @@ def response_body_should_contain_validation_errors_for(context, datatable):
         f'Expected "type" to be "https://my-api-doc.dev/problems/validation-error". Body: {body}'
     )
     errors = body.get("errors")
-    assert isinstance(errors, list), (
-        f'Expected "errors" to be a list. Body: {body}'
-    )
+    assert isinstance(errors, list), f'Expected "errors" to be a list. Body: {body}'
     for row in datatable:
         field = row[0]
         field_present = any(err.get("field") == field for err in errors)

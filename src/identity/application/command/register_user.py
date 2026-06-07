@@ -32,6 +32,6 @@ class RegisterUserCommandHandler:
         self.__user_repository.save(new_user)
 
     def __validate_user_is_not_exists(self, email: Email) -> None:
-        user: User|None = self.__user_repository.find_by_email(email)
-        if not user is None:
+        user: User | None = self.__user_repository.find_by_email(email)
+        if user is not None:
             raise UserAlreadyExists.with_email(email)

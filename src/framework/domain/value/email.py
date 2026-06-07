@@ -4,12 +4,13 @@ from ddd import ValueObject
 
 from framework.domain import DomainException
 
+
 class InvalidEmail(DomainException):
     def __init__(self, message: str):
         super().__init__(message)
 
     @staticmethod
-    def provided(email_address: str) -> 'InvalidEmail':
+    def provided(email_address: str) -> "InvalidEmail":
         return InvalidEmail(f"Invalid email address: {email_address!r}")
 
 
@@ -31,7 +32,7 @@ class Email(ValueObject):
         self.__value = normalized
 
     @classmethod
-    def from_string(cls, email: str) -> 'Email':
+    def from_string(cls, email: str) -> "Email":
         return Email(email)
 
     @property

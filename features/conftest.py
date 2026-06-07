@@ -33,7 +33,9 @@ def truncate_tables(client):
     # DELETE (RowExclusiveLock) doesn't conflict with AccessShareLock held by
     # unclosed SQLAlchemy sessions, unlike TRUNCATE (AccessExclusiveLock).
     # sorted_tables gives FK-safe dependency order; reverse it for child-first deletion.
-    db: DatabaseConnection = ServiceContainer.get_instance().get_service(DatabaseConnection)
+    db: DatabaseConnection = ServiceContainer.get_instance().get_service(
+        DatabaseConnection
+    )
     with db.engine.connect() as conn:
         for table in reversed(mapper_registry.metadata.sorted_tables):
             conn.execute(table.delete())

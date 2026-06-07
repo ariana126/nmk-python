@@ -16,14 +16,14 @@ def start_mappers() -> None:
         User,
         users_table,
         properties={
-            '_id': users_table.c.id,
-            '_User__email': users_table.c.email,
-            '_User__password': users_table.c.password,
-            '_User__registered_at': users_table.c.registered_at,
+            "_id": users_table.c.id,
+            "_User__email": users_table.c.email,
+            "_User__password": users_table.c.password,
+            "_User__registered_at": users_table.c.registered_at,
         },
     )
 
-    @event.listens_for(User, 'load')
+    @event.listens_for(User, "load")
     def _on_load(target: User, context) -> None:
         target._AggregateRoot__events = []
 

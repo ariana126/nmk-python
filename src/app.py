@@ -20,13 +20,16 @@ class App:
 
         service_container.bind(Clock, SystemClock)
 
-        service_container.bind_parameters(DatabaseConnection, {
-            'host': 'DB_HOST',
-            'port': 'DB_PORT',
-            'database': 'DB_DATABASE',
-            'username': 'DB_USERNAME',
-            'password': 'DB_PASSWORD',
-        })
+        service_container.bind_parameters(
+            DatabaseConnection,
+            {
+                "host": "DB_HOST",
+                "port": "DB_PORT",
+                "database": "DB_DATABASE",
+                "username": "DB_USERNAME",
+                "password": "DB_PASSWORD",
+            },
+        )
 
         App.__boot_modules()
 

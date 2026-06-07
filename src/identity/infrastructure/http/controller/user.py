@@ -1,5 +1,4 @@
 from fastapi import APIRouter, Response
-from mediatr import Mediator
 from pydantic import BaseModel, ConfigDict
 from pydm import ServiceContainer
 
@@ -12,9 +11,11 @@ command_bus = ServiceContainer.get_instance().get_service(CommandBus)
 
 
 class RegisterUserRequest(BaseModel):
-    model_config = ConfigDict(json_schema_extra={
-        "example": {"email": "alice@example.com", "password": "s3cr3t"}
-    })
+    model_config = ConfigDict(
+        json_schema_extra={
+            "example": {"email": "alice@example.com", "password": "s3cr3t"}
+        }
+    )
     email: str
     password: str
 
@@ -34,7 +35,9 @@ async def register_user(body: RegisterUserRequest) -> Response:
         return Response(content=str(e), status_code=422)
 
     try:
-        await command_bus.execute(RegisterUserCommand(email=email, password=body.password))
+        await command_bus.execute(
+            RegisterUserCommand(email=email, password=body.password)
+        )
     except UserAlreadyExists as e:
         return Response(content=str(e), status_code=409)
 

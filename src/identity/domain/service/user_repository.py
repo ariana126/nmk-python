@@ -8,5 +8,5 @@ from identity.domain import User
 
 class UserRepository(EntityRepository, ABC):
     @abstractmethod
-    def find_by_email(self, email: Email) -> User|None:
+    def find_by_email(self, email: Email) -> User | None:
         pass

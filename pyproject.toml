@@ -24,6 +24,7 @@ dev = [
     "assertpy",
     "pytest-bdd",
     "httpx2",
+    "ruff",
 ]
 
 [tool.pytest.ini_options]
