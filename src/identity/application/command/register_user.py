@@ -9,9 +9,13 @@ from identity.domain import UserRepository, User
 
 
 class UserAlreadyExists(RuntimeError):
+    def __init__(self, message: str, email: Email) -> None:
+        super().__init__(message)
+        self.email = email
+
     @staticmethod
     def with_email(email: Email) -> "UserAlreadyExists":
-        return UserAlreadyExists(f"User {email.as_string} already exists.")
+        return UserAlreadyExists(f"User {email.as_string} already exists.", email)
 
 
 @dataclass

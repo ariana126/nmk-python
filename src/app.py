@@ -6,6 +6,7 @@ from fastapi import FastAPI
 
 from framework.infrastructure import DatabaseConnection, Module
 from identity import IdentityModule
+from framework.infrastructure import register_exception_handlers
 
 
 class App:
@@ -39,6 +40,7 @@ class App:
             description="NMK backend — Identity and beyond.",
         )
         App.__configure_routes(app)
+        register_exception_handlers(app)
 
         return app
 
@@ -51,4 +53,4 @@ class App:
     def __configure_routes(app: FastAPI) -> None:
         for module in App.__MODULES:
             for router in module.get_routers():
-                app.include_router(router)
+                app.include_router(router, prefix="/api")

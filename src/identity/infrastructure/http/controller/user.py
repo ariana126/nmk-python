@@ -1,10 +1,10 @@
 from fastapi import APIRouter, Response
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from pydm import ServiceContainer
 
-from framework.domain import Email, InvalidEmail
+from framework.domain import Email
 from framework.infrastructure.cqrs import CommandBus
-from identity.application.command import RegisterUserCommand, UserAlreadyExists
+from identity.application.command import RegisterUserCommand
 
 users_router = APIRouter(tags=["Users"])
 command_bus = ServiceContainer.get_instance().get_service(CommandBus)
@@ -17,28 +17,66 @@ class RegisterUserRequest(BaseModel):
         }
     )
     email: str
-    password: str
+    password: str = Field(min_length=6)
 
 
 @users_router.post(
     "/users",
     status_code=201,
+    summary="Register a new user",
     responses={
-        409: {"description": "User already exists"},
-        422: {"description": "Invalid email format"},
+        409: {
+            "description": "A user with the given email is already registered.",
+            "content": {
+                "application/problem+json": {
+                    "example": {
+                        "type": "https://my-api-doc.dev/problems/user-already-exists",
+                        "title": "User Already Exists",
+                        "status": 409,
+                        "detail": "User with email alice@example.com already exists.",
+                        "email": "alice@example.com",
+                    }
+                }
+            },
+        },
+        422: {
+            "description": "Request body failed validation, or the email address is malformed.",
+            "content": {
+                "application/problem+json": {
+                    "examples": {
+                        "body-validation": {
+                            "summary": "Body validation failed",
+                            "value": {
+                                "type": "https://my-api-doc.dev/problems/validation-error",
+                                "title": "Validation Error",
+                                "status": 422,
+                                "errors": [
+                                    {
+                                        "field": "body.password",
+                                        "msg": "String should have at least 6 characters",
+                                    }
+                                ],
+                            },
+                        },
+                        "invalid-email": {
+                            "summary": "Invalid email address",
+                            "value": {
+                                "type": "https://my-api-doc.dev/problems/invalid-email",
+                                "title": "Invalid email address",
+                                "status": 422,
+                                "detail": "not-an-email is not a valid email address.",
+                                "email": "not-an-email",
+                            },
+                        },
+                    }
+                }
+            },
+        },
     },
 )
 async def register_user(body: RegisterUserRequest) -> Response:
-    try:
-        email = Email.from_string(body.email)
-    except InvalidEmail as e:
-        return Response(content=str(e), status_code=422)
-
-    try:
-        await command_bus.execute(
-            RegisterUserCommand(email=email, password=body.password)
-        )
-    except UserAlreadyExists as e:
-        return Response(content=str(e), status_code=409)
+    await command_bus.execute(
+        RegisterUserCommand(email=Email.from_string(body.email), password=body.password)
+    )
 
     return Response(status_code=201)

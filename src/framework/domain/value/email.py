@@ -6,12 +6,13 @@ from framework.domain import DomainException
 
 
 class InvalidEmail(DomainException):
-    def __init__(self, message: str):
+    def __init__(self, message: str, email_address: str) -> None:
         super().__init__(message)
+        self.email_address = email_address
 
     @staticmethod
     def provided(email_address: str) -> "InvalidEmail":
-        return InvalidEmail(f"Invalid email address: {email_address!r}")
+        return InvalidEmail(f"Invalid email address: {email_address!r}", email_address)
 
 
 class Email(ValueObject):

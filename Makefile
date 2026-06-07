@@ -16,10 +16,13 @@ bdd:
 	PYTHONPATH=src .venv/bin/pytest features/ -v
 
 lint:
-	ruff check .
+	.venv/bin/ruff check .
+
+lint-fix:
+	.venv/bin/ruff check . --fix
 
 format:
-	ruff format .
+	.venv/bin/ruff format .
 
 migrate:
 	PYTHONPATH=src .venv/bin/alembic upgrade head
