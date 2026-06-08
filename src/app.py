@@ -9,9 +9,11 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from pythonjsonlogger import json
 
-from framework.infrastructure import DatabaseConnection, Module
+from framework.infrastructure import DatabaseConnection, Module, DomainEventBus
+from framework.infrastructure.domain_event_logger import DomainEventLogger
 from identity import IdentityModule
 from framework.infrastructure import register_exception_handlers
+from identity.domain import UserRegistered
 
 
 class App:
@@ -26,7 +28,6 @@ class App:
         service_container.set_parameters(parameters)
 
         service_container.bind(Clock, SystemClock)
-
         service_container.bind_parameters(
             DatabaseConnection,
             {
@@ -38,6 +39,7 @@ class App:
             },
         )
 
+        App.__register_event_listeners(service_container.get_service(DomainEventBus))
         App.__configure_logger(
             parameters.get("LOG_PATH"), "true" == parameters.get("DEBUG")
         )
@@ -81,3 +83,7 @@ class App:
 
         handler.setFormatter(formatter)
         logger.addHandler(handler)
+
+    @staticmethod
+    def __register_event_listeners(event_bus: DomainEventBus) -> None:
+        event_bus.register(UserRegistered, [DomainEventLogger])

@@ -6,7 +6,7 @@ from typing import TYPE_CHECKING
 from ddd import AggregateRoot, Identity
 
 from framework.domain import Email
-from identity.domain.event.user_registered import UserRegistered
+from identity.domain.event import UserRegistered
 
 if TYPE_CHECKING:
     from identity.domain.service.password_hasher import PasswordHasher
