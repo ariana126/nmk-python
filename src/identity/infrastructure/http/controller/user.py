@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Response
 from pydantic import BaseModel, ConfigDict, Field
+from pydantic.alias_generators import to_camel
 from pydm import ServiceContainer
 
 from framework.domain import Email
@@ -12,10 +13,19 @@ command_bus = ServiceContainer.get_instance().get_service(CommandBus)
 
 class RegisterUserRequest(BaseModel):
     model_config = ConfigDict(
+        alias_generator=to_camel,
+        populate_by_name=True,
         json_schema_extra={
-            "example": {"email": "alice@example.com", "password": "s3cr3t"}
-        }
+            "example": {
+                "firstName": "Alice",
+                "lastName": "Smith",
+                "email": "alice@example.com",
+                "password": "s3cr3t",
+            }
+        },
     )
+    first_name: str
+    last_name: str
     email: str
     password: str = Field(min_length=6)
 
@@ -76,7 +86,12 @@ class RegisterUserRequest(BaseModel):
 )
 async def register_user(body: RegisterUserRequest) -> Response:
     await command_bus.execute(
-        RegisterUserCommand(email=Email.from_string(body.email), password=body.password)
+        RegisterUserCommand(
+            body.first_name,
+            body.last_name,
+            Email.from_string(body.email),
+            body.password,
+        )
     )
 
     return Response(status_code=201)

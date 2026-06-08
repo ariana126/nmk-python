@@ -18,6 +18,8 @@ def start_mappers() -> None:
         properties={
             "_id": users_table.c.id,
             "_User__email": users_table.c.email,
+            "_User__first_name": users_table.c.first_name,
+            "_User__last_name": users_table.c.last_name,
             "_User__password": users_table.c.password,
             "_User__registered_at": users_table.c.registered_at,
         },

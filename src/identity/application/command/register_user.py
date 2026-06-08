@@ -20,6 +20,8 @@ class UserAlreadyExists(RuntimeError):
 
 @dataclass
 class RegisterUserCommand(Command):
+    first_name: str
+    last_name: str
     email: Email
     password: str
 
@@ -32,7 +34,9 @@ class RegisterUserCommandHandler:
 
     async def handle(self, cmd: RegisterUserCommand) -> None:
         self.__validate_user_is_not_exists(cmd.email)
-        new_user = User.register(cmd.email, cmd.password, self.__clock.now())
+        new_user = User.register(
+            cmd.first_name, cmd.last_name, cmd.email, cmd.password, self.__clock.now()
+        )
         self.__user_repository.save(new_user)
 
     def __validate_user_is_not_exists(self, email: Email) -> None:

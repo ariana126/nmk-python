@@ -9,7 +9,7 @@ from framework.infrastructure.http import ExceptionMapper, ProblemDetail
 from framework.infrastructure.http import FrameworkExceptionMapper
 from identity.infrastructure.http import IdentityExceptionMapper
 
-logger = logging.getLogger('ExceptionHandler')
+logger = logging.getLogger("ExceptionHandler")
 
 
 _EXCEPTION_MAPPERS: tuple[type(ExceptionMapper), ...] = (

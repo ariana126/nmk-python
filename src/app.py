@@ -38,7 +38,9 @@ class App:
             },
         )
 
-        App.__configure_logger(parameters.get('LOG_PATH'), 'true' == parameters.get('DEBUG'))
+        App.__configure_logger(
+            parameters.get("LOG_PATH"), "true" == parameters.get("DEBUG")
+        )
 
         App.__boot_modules()
 
@@ -70,13 +72,11 @@ class App:
         logger = logging.getLogger()
 
         logger.setLevel(logging.INFO if not debug else logging.DEBUG)
-        formatter = json.JsonFormatter(
-            "%(asctime)s %(levelname)s %(name)s %(message)s"
-        )
+        formatter = json.JsonFormatter("%(asctime)s %(levelname)s %(name)s %(message)s")
         handler = RotatingFileHandler(
-            os.path.join(resolved_log_path, 'app.log'),
-            maxBytes=5_000_000, # ~5M
-            backupCount=10
+            os.path.join(resolved_log_path, "app.log"),
+            maxBytes=5_000_000,  # ~5M
+            backupCount=10,
         )
 
         handler.setFormatter(formatter)
