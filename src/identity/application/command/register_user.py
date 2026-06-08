@@ -2,10 +2,10 @@ from dataclasses import dataclass
 
 from mediatr import Mediator
 from ddd import Clock
-from ddd.application import Command
+from ddd.application import Command, CommandHandler
 
 from framework.domain import Email
-from identity.domain import UserRepository, User
+from identity.domain import UserRepository, User, PasswordHasher
 
 
 class UserAlreadyExists(RuntimeError):
@@ -27,15 +27,22 @@ class RegisterUserCommand(Command):
 
 
 @Mediator.handler
-class RegisterUserCommandHandler:
-    def __init__(self, user_repository: UserRepository, clock: Clock):
+class RegisterUserCommandHandler(CommandHandler):
+    def __init__(
+        self,
+        user_repository: UserRepository,
+        clock: Clock,
+        password_hasher: PasswordHasher,
+    ):
         self.__user_repository = user_repository
         self.__clock = clock
+        self.__password_hasher = password_hasher
 
     async def handle(self, cmd: RegisterUserCommand) -> None:
         self.__validate_user_is_not_exists(cmd.email)
+        hashed = self.__password_hasher.hash(cmd.password)
         new_user = User.register(
-            cmd.first_name, cmd.last_name, cmd.email, cmd.password, self.__clock.now()
+            cmd.first_name, cmd.last_name, cmd.email, hashed, self.__clock.now()
         )
         self.__user_repository.save(new_user)
 

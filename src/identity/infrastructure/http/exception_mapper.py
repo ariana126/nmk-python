@@ -1,11 +1,11 @@
 from framework.infrastructure.http import ExceptionMapper, ProblemDetail
-from identity.application.command import UserAlreadyExists
+from identity.application.command import UserAlreadyExists, InvalidCredentials
 
 
 class IdentityExceptionMapper(ExceptionMapper):
     @staticmethod
     def can_map(exception: Exception) -> bool:
-        return isinstance(exception, UserAlreadyExists)
+        return isinstance(exception, (UserAlreadyExists, InvalidCredentials))
 
     @staticmethod
     def to_problem_detail(exception: Exception) -> ProblemDetail:
@@ -20,6 +20,13 @@ class IdentityExceptionMapper(ExceptionMapper):
                     {
                         "email": exception.email.as_string,
                     },
+                )
+            case InvalidCredentials():
+                return ProblemDetail(
+                    "invalid-credentials",
+                    "Invalid Credentials",
+                    401,
+                    str(exception),
                 )
             case _:
                 raise RuntimeError(f"Unexpected exception: {exception}")

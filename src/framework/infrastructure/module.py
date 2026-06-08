@@ -10,5 +10,5 @@ class Module(ABC):
 
     @staticmethod
     @abstractmethod
-    def get_routers() -> tuple[APIRouter]:
+    def get_routers() -> tuple[APIRouter, ...]:
         pass
