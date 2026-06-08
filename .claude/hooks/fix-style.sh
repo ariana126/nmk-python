@@ -1,5 +1,5 @@
 #!/bin/bash
 if git status --porcelain | grep -q '\.py$'; then
-  .venv/bin/ruff check --fix .
-  .venv/bin/ruff format .
+  docker compose exec -T app ruff check --fix .
+  docker compose exec -T app ruff format .
 fi

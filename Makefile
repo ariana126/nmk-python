@@ -1,37 +1,53 @@
-.PHONY: install dev start test bdd lint format migrate migrate-create migrate-down migrate-history
+.PHONY: install start-dev start-prod down restart status logs shell test bdd lint lint-fix format \
+	migrate migration-create migrate-rollback migration-history
 
 install:
-	pip install -e ".[dev]"
+	docker compose build
 
-dev:
-	uvicorn src.main:app --reload --host 0.0.0.0 --port 8000
+start-dev:
+	docker compose up -d
 
-start:
-	uvicorn src.main:app --host 0.0.0.0 --port 8000
+start-prod:
+	docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+
+down:
+	docker compose down
+
+restart:
+	docker compose restart
+
+status:
+	docker compose ps
+
+logs:
+	docker compose logs -f app
+
+shell:
+	docker compose exec app bash
 
 test:
-	PYTHONPATH=src .venv/bin/pytest src/
+	docker compose exec app pytest src/
 
 bdd:
-	PYTHONPATH=src .venv/bin/pytest features/ -v
+	docker compose exec app pytest features/ -v
 
 lint:
-	.venv/bin/ruff check .
+	docker compose exec app ruff check .
 
 lint-fix:
-	.venv/bin/ruff check . --fix
+	docker compose exec app ruff check . --fix
 
 format:
-	.venv/bin/ruff format .
+	docker compose exec app ruff format .
 
 migrate:
-	PYTHONPATH=src .venv/bin/alembic upgrade head
+	docker compose exec app alembic upgrade head
 
 migration-create:
-	PYTHONPATH=src .venv/bin/alembic revision --autogenerate -m "$(m)"
+	docker compose exec app alembic revision --autogenerate -m "$(m)"
 
 migrate-rollback:
-	PYTHONPATH=src .venv/bin/alembic downgrade -1
+	docker compose exec app alembic downgrade -1
 
 migration-history:
-	PYTHONPATH=src .venv/bin/alembic history --verbose
+	docker compose exec app alembic history --verbose

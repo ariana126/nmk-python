@@ -1,0 +1,30 @@
+# Version control
+.git/
+.gitignore
+
+# Python virtual environment & build artifacts
+.venv/
+build/
+*.egg-info/
+__pycache__/
+*.pyc
+*.pyo
+
+# Test / lint caches
+.pytest_cache/
+.ruff_cache/
+
+# Logs (generated at runtime; should not be baked into the image)
+logs/
+
+# Environment files (injected at runtime via compose, never baked into image)
+.env
+.env.*
+!.env.example
+
+# Editor/IDE
+.idea/
+.vscode/
+
+# Misc
+.claude/

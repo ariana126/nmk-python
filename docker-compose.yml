@@ -1,0 +1,46 @@
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USERNAME:-local}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-local}
+      POSTGRES_DB: ${DB_DATABASE:-mydb}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-local} -d ${DB_DATABASE:-mydb}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      target: dev
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_DATABASE: ${DB_DATABASE:-mydb}
+      DB_USERNAME: ${DB_USERNAME:-local}
+      DB_PASSWORD: ${DB_PASSWORD:-local}
+      LOG_PATH: ${LOG_PATH:-logs}
+      DEBUG: ${DEBUG:-true}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+    volumes:
+      - ./src:/app/src
+      - ./migrations:/app/migrations
+      - ./features:/app/features
+      - ./alembic.ini:/app/alembic.ini
+
+volumes:
+  pgdata:
