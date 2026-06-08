@@ -37,7 +37,7 @@ Then they should receive a JWT token
 Given a user record exists in the users table
 ```
 
-This approach decouples tests from internals, making them resilient to refactors and safe to run against AI-generated implementations.
+Feature specs live under `features/specs/` and are run with `make bdd`. This approach decouples tests from internals, making them resilient to refactors and safe to run against AI-generated implementations.
 
 ### Structural Validation
 
@@ -77,28 +77,29 @@ src/
 ├── framework/                  # Shared DDD building blocks
 │   ├── domain/                 # DomainException
 │   │   └── value/              # Email
+│   ├── application/            # TokenService interface
 │   └── infrastructure/         # App bootstrap, Module, DatabaseConnection
-│       ├── cqrs/               # CommandBus
+│       ├── cqrs/               # CommandBus, QueryBus
 │       └── persistence/        # SQLAlchemyBaseRepository, mapper, types
 │
-└── identity/                   # User registration
+└── identity/                   # User identity bounded context
     ├── domain/                 # User aggregate, UserRepository interface
     │   ├── event/              # UserRegistered
-    │   └── service/            # UserRepository
+    │   └── service/            # PasswordHasher
     ├── application/
-    │   └── command/            # RegisterUserCommand + handler
+    │   ├── command/            # RegisterUserCommand, LoginCommand + handlers
+    │   └── query/              # GetUserByIdQuery + handler
     └── infrastructure/         # IdentityModule
         ├── http/
-        │   └── controller/     # FastAPI routers
+        │   └── controller/     # auth.py (login), user.py (register, profile)
         └── persistence/        # SQLAlchemyUserRepository, mapper, tables
 ```
-
----
 
 ## Request Flow
 
 ```
-Router → Mediator → CommandHandler → Aggregate.factory() → Repository.save()
+Command: Router → CommandBus → CommandHandler → Aggregate.factory() → Repository.save()
+Query:   Router → QueryBus  → QueryHandler   → Repository.find()  → return DTO
 ```
 
 Domain events are recorded on the aggregate via `_record_that(event)`, then released and published by the repository on save.
@@ -129,7 +130,7 @@ cp .env.example .env
 # Fill in DB_HOST, DB_PORT, DB_DATABASE, DB_USERNAME, DB_PASSWORD in .env
 
 # 3. Run database migrations
-alembic upgrade head
+make migrate
 
 # 4. Start the dev server
 make dev
@@ -145,8 +146,11 @@ make dev
 | `make dev` | Start with hot reload on :8000 |
 | `make start` | Start in production mode on :8000 |
 | `make test` | Run unit tests |
+| `make bdd` | Run BDD tests |
 | `make lint` | Lint with ruff |
+| `make lint-fix` | Lint with ruff and auto-fix |
 | `make format` | Format with ruff |
-| `alembic upgrade head` | Apply pending migrations |
-| `alembic revision --autogenerate -m "..."` | Create a new migration |
-| `alembic current` | Show migration status |
+| `make migrate` | Apply pending migrations |
+| `make migration-create m="..."` | Create a new migration |
+| `make migrate-rollback` | Roll back the last migration |
+| `make migration-history` | Show migration history |
