@@ -4,24 +4,30 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
+All commands run inside Docker containers. The stack must be up (`make start-dev`) before running `exec`-based targets.
+
 ```bash
-make install         # pip install -e ".[dev]"
-make dev             # uvicorn with --reload on :8000
-make start           # uvicorn production mode on :8000
-make test            # PYTHONPATH=src pytest src/  (unit tests)
-make bdd             # PYTHONPATH=src pytest features/ -v  (BDD tests, needs a live Postgres)
-make lint            # ruff check .
-make lint-fix        # ruff check . --fix
-make format          # ruff format .
+make install         # docker compose build
+make start-dev       # docker compose up -d  (dev target, hot-reload)
+make start-prod      # build + start production stack (no volumes, no dev extras)
+make down            # docker compose down
+make restart         # docker compose restart
+make status          # docker compose ps
+make logs            # docker compose logs -f app
+make shell           # docker compose exec app bash
 
-# Run a single test file
+make test            # pytest src/ inside container (unit tests)
+make bdd             # pytest features/ -v inside container (BDD tests, needs running stack)
+make lint            # ruff check . inside container
+make lint-fix        # ruff check . --fix inside container
+make format          # ruff format . inside container
+
+# Run a single test (open a shell first: make shell)
 pytest src/framework/domain/value/email_test.py
-
-# Run a single test by name
 pytest -k "test_valid_email_address_is_accepted"
 
 # Database migrations (Alembic)
-make migrate                       # alembic upgrade head
+make migrate                       # alembic upgrade head inside container
 make migration-create m="message"  # alembic revision --autogenerate -m "message"
 make migrate-rollback              # alembic downgrade -1
 make migration-history             # alembic history --verbose
@@ -32,6 +38,20 @@ Alembic is configured: `alembic.ini` points at `migrations/`, and `migrations/en
 ## Environment
 
 Copy `.env.example` to `.env` and fill in the PostgreSQL connection values. The app reads `DB_HOST`, `DB_PORT`, `DB_DATABASE`, `DB_USERNAME`, and `DB_PASSWORD` via `python-dotenv`. Other vars: `LOG_PATH` (rotating JSON log file directory), `DEBUG` (`true`/`false`, controls log level), and `JWT_SECRET` (HS256 signing secret used by `JwtTokenService`).
+
+When running via Docker Compose, `DB_HOST` is set to `db` (the Compose service name) automatically in `docker-compose.yml`; you only need to override credentials in `.env` if the defaults (`local`/`local`/`mydb`) don't suit you.
+
+## Docker
+
+The project is fully containerized. `Dockerfile` uses multi-stage builds:
+
+- **`base`** — Python 3.13-slim, installs the package
+- **`dev`** (extends `base`) — installs `.[dev]` extras; used by `docker-compose.yml` with volume mounts for `src/`, `migrations/`, `features/`, and `alembic.ini` to enable hot-reload
+- **`prod`** (extends `base`) — installs without dev extras, no volumes; used by `docker-compose.prod.yml`
+
+`docker/entrypoint.sh` runs `alembic upgrade head` then starts uvicorn on every container start, so migrations apply automatically.
+
+`docker-compose.yml` spins up two services: `db` (postgres:16-alpine) with a healthcheck, and `app` (dev target) that waits for the database to be healthy before starting.
 
 ## Architecture
 
@@ -110,6 +130,27 @@ The shared `mapper_registry` lives in `framework/infrastructure/persistence/mapp
 
 `IdentityType` and `EmailType` in `framework/infrastructure/persistence/types.py` are `TypeDecorator` subclasses that convert between `Identity`/`Email` value objects and plain strings at the database boundary.
 
+### Domain Event Bus
+
+`framework/infrastructure/event_bus.py` provides `DomainEventBus` and `DomainEventListener`:
+
+- **`DomainEventListener`** — abstract base with a single `async execute(event: DomainEvent)` method; implement this for each handler.
+- **`DomainEventBus`** — holds a listener registry (`event type → [listener classes]`) and a set of tracked `asyncio.Task` objects. Resolved from the DI container as a singleton.
+
+Publishing flow:
+1. Aggregate records an event: `self._record_that(SomeEvent(...))`
+2. `SQLAlchemyBaseRepository.save()` calls `event_bus.publish_in_background(event)` for each event from `aggregate.release_events()`
+3. `publish_in_background()` wraps `publish()` in an `asyncio.create_task()` so the HTTP response is not blocked
+4. Listeners are resolved from `ServiceContainer` at execution time (late-binding, supports constructor injection)
+5. Listener failures are caught and logged; they never propagate to the caller
+
+Registration happens in `App.__register_event_listeners()` in `src/app.py`:
+```python
+event_bus.register(UserRegistered, [DomainEventLogger])
+```
+
+`DomainEventLogger` (`src/framework/infrastructure/domain_event_logger.py`) is the built-in listener that debug-logs every event. To add a new listener: implement `DomainEventListener`, register a binding in the relevant `Module.boot()`, then call `event_bus.register(EventClass, [ListenerClass])` in `App.__register_event_listeners()`.
+
 ### Request flow
 
 ```
@@ -123,13 +164,15 @@ await command_bus.execute(cmd)  or  await query_bus.execute(query)
                                         ↓     (handler resolved from DI container)
 Handler → Aggregate.factory_method() / domain service → Repository.save() or .find()
                                         ↓
-                               TODO: publish domain events
+              SQLAlchemyBaseRepository.save() → event_bus.publish_in_background(events)
+                                        ↓
+                      asyncio background tasks → DomainEventListener.execute(event)
 
 Exceptions ↦ register_exception_handlers() → ExceptionMapper chain
                                         ↳ RFC 7807 ProblemDetail JSON (application/problem+json)
 ```
 
-Domain events are recorded on the aggregate via `_record_that(event)` (from `AggregateRoot`) and available via `release_events()`. Event publishing from `SQLAlchemyBaseRepository.save()` is not yet implemented (marked TODO).
+Domain events are recorded on the aggregate via `_record_that(event)` (from `AggregateRoot`) and released via `release_events()`. `SQLAlchemyBaseRepository.save()` publishes them asynchronously in the background via `DomainEventBus`.
 
 ### Tests
 

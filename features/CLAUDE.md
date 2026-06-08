@@ -3,11 +3,12 @@
 ## Running
 
 ```bash
-make bdd                          # run all BDD tests
-PYTHONPATH=src pytest features/ -v -k "register"  # filter by name
+make bdd                          # run all BDD tests (stack must be up: make start-dev)
+# Filter by name (open a shell first: make shell)
+pytest features/ -v -k "register"
 ```
 
-BDD tests require a live PostgreSQL database and a running migration baseline. `conftest.py` boots the app, runs `alembic upgrade head`, and tears down table rows between each scenario.
+BDD tests run inside the Docker container via `docker compose exec`. The full stack (`make start-dev`) must be running before executing `make bdd`. `conftest.py` boots the app, runs `alembic upgrade head`, and tears down table rows between each scenario.
 
 ## Layout
 
