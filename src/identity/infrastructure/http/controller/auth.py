@@ -7,7 +7,7 @@ from framework.domain import Email
 from framework.infrastructure.cqrs import CommandBus
 from identity.application.command import LoginCommand
 
-auth_router = APIRouter(tags=["Auth"])
+auth_router = APIRouter(tags=["Auth"], prefix="/auth")
 command_bus = ServiceContainer.get_instance().get_service(CommandBus)
 
 

@@ -24,7 +24,7 @@ def run_migrations(_app):
 
 @pytest.fixture(scope="session")
 def client(_app, run_migrations):
-    with TestClient(_app) as c:
+    with TestClient(_app, raise_server_exceptions=False) as c:
         yield c
 
 

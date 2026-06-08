@@ -38,4 +38,4 @@ class LoginCommandHandler(CommandHandler):
             command.password, self.__password_hasher
         ):
             raise InvalidCredentials.provided()
-        return self.__token_service.issue_for_user(user.id.as_string)
+        return self.__token_service.issue_for_user(user.id)
