@@ -4,7 +4,7 @@ from ddd.application import Command, CommandHandler
 from mediatr import Mediator
 
 from framework.domain import Email
-from identity.application.service import TokenService
+from framework.application import TokenService
 from identity.domain import UserRepository, PasswordHasher
 
 

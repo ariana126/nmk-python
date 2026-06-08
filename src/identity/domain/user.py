@@ -29,6 +29,18 @@ class User(AggregateRoot):
         self.__password = password
         self.__registered_at = registered_at
 
+    @property
+    def first_name(self) -> str:
+        return self.__first_name
+
+    @property
+    def last_name(self) -> str:
+        return self.__last_name
+
+    @property
+    def email(self) -> Email:
+        return self.__email
+
     @staticmethod
     def register(
         first_name: str, last_name: str, email: Email, password: str, date: datetime

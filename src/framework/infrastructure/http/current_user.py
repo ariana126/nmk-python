@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydm import ServiceContainer
 
-from identity.application.service import TokenService
+from framework.application import TokenService
 
 _bearer_scheme = HTTPBearer()
 

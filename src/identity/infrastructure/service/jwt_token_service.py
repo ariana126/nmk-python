@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, timezone
 import jwt
 from ddd import Identity
 
-from identity.application.service.token_service import TokenService
+from framework.application import TokenService
 
 
 class JwtTokenService(TokenService):

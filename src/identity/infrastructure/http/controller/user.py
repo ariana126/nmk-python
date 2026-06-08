@@ -8,7 +8,8 @@ from framework.domain import Email, InvalidEmail
 from framework.infrastructure.cqrs import CommandBus, QueryBus
 from identity.application.command import RegisterUserCommand
 from identity.application.query.get_user_by_id import GetUserByIdQuery
-from identity.infrastructure.http import get_current_user_id
+from framework.infrastructure.http import get_current_user_id
+from identity.domain import User
 
 users_router = APIRouter(tags=["Users"], prefix="/users")
 command_bus = ServiceContainer.get_instance().get_service(CommandBus)
@@ -149,10 +150,10 @@ class UserResponse(BaseModel):
     },
 )
 async def get_user(user_id: Identity = Depends(get_current_user_id)) -> UserResponse:
-    user = await query_bus.execute(GetUserByIdQuery(user_id))
+    user: User = await query_bus.execute(GetUserByIdQuery(user_id))
     return UserResponse(
-        id=user.id,
+        id=user.id.as_string,
         first_name=user.first_name,
         last_name=user.last_name,
-        email=user.email,
+        email=user.email.as_string,
     )

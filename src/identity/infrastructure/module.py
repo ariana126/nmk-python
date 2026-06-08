@@ -1,8 +1,8 @@
 from fastapi import APIRouter
 from pydm import ServiceContainer
 
+from framework.application import TokenService
 from framework.infrastructure import Module
-from identity.application.service import TokenService
 from identity.domain import UserRepository, PasswordHasher
 from identity.infrastructure.http.controller import users_router, auth_router
 from identity.infrastructure.persistence import SQLAlchemyUserRepository
