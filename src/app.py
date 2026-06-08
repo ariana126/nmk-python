@@ -9,7 +9,12 @@ from dotenv import load_dotenv
 from fastapi import FastAPI
 from pythonjsonlogger import json
 
-from framework.infrastructure import DatabaseConnection, Module, DomainEventBus
+from framework.infrastructure import (
+    DatabaseConnection,
+    Module,
+    DomainEventBus,
+    health_router,
+)
 from framework.infrastructure.domain_event_logger import DomainEventLogger
 from identity import IdentityModule
 from framework.infrastructure import register_exception_handlers
@@ -63,6 +68,8 @@ class App:
 
     @staticmethod
     def __configure_routes(app: FastAPI) -> None:
+        app.include_router(health_router)
+
         for module in App.__MODULES:
             for router in module.get_routers():
                 app.include_router(router, prefix="/api")
