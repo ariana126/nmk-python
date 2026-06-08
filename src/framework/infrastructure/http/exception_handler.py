@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from starlette.exceptions import HTTPException
@@ -6,6 +8,9 @@ from fastapi.responses import JSONResponse
 from framework.infrastructure.http import ExceptionMapper, ProblemDetail
 from framework.infrastructure.http import FrameworkExceptionMapper
 from identity.infrastructure.http import IdentityExceptionMapper
+
+logger = logging.getLogger('ExceptionHandler')
+
 
 _EXCEPTION_MAPPERS: tuple[type(ExceptionMapper), ...] = (
     FrameworkExceptionMapper,
@@ -26,6 +31,7 @@ def register_exception_handlers(app: FastAPI) -> None:
 
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
+        logger.exception(exc)
         return __get_error_response(exc)
 
 
