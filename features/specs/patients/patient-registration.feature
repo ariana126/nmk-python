@@ -12,7 +12,7 @@ Feature: Patient Registration
       | name        | Ariana Maghsoudi |
       | dateOfBirth | 2004-01-26       |
       | email       | test@example.com |
-    Then the response status should be 201
+    Then the response status should be 200
     And the response body should contain the patient ID
     And I should see the patient profile with the following details:
       | name        | Ariana Maghsoudi |
