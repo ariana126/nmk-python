@@ -1,6 +1,6 @@
 from pytest_bdd import scenarios, given, when, then, parsers
 
-scenarios("../../specs/identity/register.feature")
+scenarios("../../specs/identity/registration.feature")
 
 
 @given(parsers.parse('no user with email "{email}" exists'))

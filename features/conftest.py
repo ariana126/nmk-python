@@ -8,7 +8,10 @@ from app import App
 from framework.infrastructure import DatabaseConnection
 from framework.infrastructure.persistence.mapper import mapper_registry
 
-pytest_plugins = ["features.step_definitions.common.http_steps"]
+pytest_plugins = [
+    "features.step_definitions.common.http_steps",
+    "features.step_definitions.common.auth_steps",
+]
 
 
 @pytest.fixture(scope="session")
