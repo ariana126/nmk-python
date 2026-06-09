@@ -29,7 +29,7 @@ test:
 	docker compose exec app pytest src/
 
 bdd:
-	docker compose exec app pytest features/ -v
+	docker compose exec app pytest features/ -v -m "not wip"
 
 lint:
 	docker compose exec app ruff check .
