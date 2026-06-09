@@ -57,10 +57,11 @@ The project is fully containerized. `Dockerfile` uses multi-stage builds:
 
 This is a Python DDD + CQRS backend. All source lives under `src/` and is installed as an editable package.
 
-### Two top-level packages
+### Source packages
 
 - **`framework/`** — shared DDD + HTTP building blocks: domain exceptions, value objects, base repository, database connection, DI `Module` base class, `CommandBus`/`QueryBus`, the `TokenService` interface, the `get_current_user_id` auth dependency, and the RFC 7807 problem-detail/exception-mapping infrastructure (see below).
 - **`identity/`** — the Identity bounded context: user registration, login (JWT issuance), and profile retrieval.
+- **`patients/`** — the Patients bounded context: patient registration and vitals tracking with out-of-range alerting; demonstrates the parent-aggregate + child-entity pattern (`Patient` → `Vitals`) and domain value objects with medical range validation (`HeartRate`, `SystolicBloodPressure`, `Temperature`).
 
 Each bounded context follows the same three-layer structure:
 
@@ -181,6 +182,8 @@ Test files are co-located with source using the `_test.py` suffix convention (e.
 BDD tests live under `features/`. Run unit tests with `make test` and BDD tests with `make bdd`. See `features/CLAUDE.md` for conventions, fixtures, and how to add new feature specs.
 
 ### Adding a new bounded context
+
+See `docs/bounded-context.md` for the full step-by-step checklist. The summary below covers the key integration points:
 
 1. Create `src/<context>/domain/`, `application/command/` (and `application/query/` if the context has reads), `infrastructure/persistence/`, `infrastructure/http/controller/` packages.
 2. Define aggregates extending `AggregateRoot`, repository/service interfaces extending `EntityRepository` (or plain ABCs for domain services).
