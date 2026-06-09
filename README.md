@@ -30,11 +30,11 @@ Behavioral tests treat the application as a **black box**. No implementation det
 
 ```gherkin
 # Good — black box
-Given a user signs up via POST /auth/signup
-Then they should receive a JWT token
+Given a client submits a valid POST /api/resource
+Then they should receive a 201 Created response
 
 # Bad — white box (avoid)
-Given a user record exists in the users table
+Given a record exists in the database table
 ```
 
 Feature specs live under `features/specs/` and are run with `make bdd`. This approach decouples tests from internals, making them resilient to refactors and safe to run against AI-generated implementations.
@@ -75,24 +75,23 @@ Beyond working code, structure is checked for long-term maintainability:
 ```
 src/
 ├── framework/                  # Shared DDD building blocks
-│   ├── domain/                 # DomainException
-│   │   └── value/              # Email
-│   ├── application/            # TokenService interface
+│   ├── domain/                 # DomainException, value objects
+│   ├── application/            # Shared service interfaces
 │   └── infrastructure/         # App bootstrap, Module, DatabaseConnection, DomainEventBus
 │       ├── cqrs/               # CommandBus, QueryBus
 │       └── persistence/        # SQLAlchemyBaseRepository, mapper, types
 │
-└── identity/                   # User identity bounded context
-    ├── domain/                 # User aggregate, UserRepository interface
-    │   ├── event/              # UserRegistered
-    │   └── service/            # PasswordHasher
-    ├── application/
-    │   ├── command/            # RegisterUserCommand, LoginCommand + handlers
-    │   └── query/              # GetUserByIdQuery + handler
-    └── infrastructure/         # IdentityModule
-        ├── http/
-        │   └── controller/     # auth.py (login), user.py (register, profile)
-        └── persistence/        # SQLAlchemyUserRepository, mapper, tables
+├── <context>/                  # One package per bounded context
+│   ├── domain/                 # Aggregates, value objects, domain events, repository interfaces
+│   ├── application/
+│   │   ├── command/            # Write commands + handlers
+│   │   └── query/              # Read queries + handlers
+│   └── infrastructure/         # <Context>Module
+│       ├── http/
+│       │   └── controller/     # FastAPI routers
+│       └── persistence/        # Tables, imperative mappers, concrete repositories
+│
+└── ...                         # Additional bounded contexts follow the same layout
 ```
 
 ## Request Flow
@@ -110,17 +109,17 @@ Domain events are recorded on the aggregate via `_record_that(event)`, released 
 
 HTTP error responses follow [RFC 9457 "Problem Details for HTTP APIs"](https://www.rfc-editor.org/rfc/rfc9457) (the standard that obsoletes RFC 7807), served as `application/problem+json` bodies with `type`, `title`, `status`, and optional `detail`, `instance`, and extension members. `ProblemDetail` (`framework/infrastructure/http/problem_detail.py`) is the value object that builds these bodies; `ProblemDetail.for_unknown_error()` is the 500 fallback for exceptions nothing maps.
 
-**How mapping works:** `ExceptionMapper` (`framework/infrastructure/http/exception_mapper.py`) is a strategy interface — `can_map(exception) -> bool` and `to_problem_detail(exception) -> ProblemDetail`. `register_exception_handlers(app)` (`framework/infrastructure/http/exception_handler.py`) registers FastAPI handlers for `RequestValidationError`, `HTTPException`, and the catch-all `Exception`; each resolves a `ProblemDetail` by walking the ordered `_EXCEPTION_MAPPERS` tuple — the first mapper whose `can_map` returns `True` wins, e.g. `(FrameworkExceptionMapper, IdentityExceptionMapper)`. `FrameworkExceptionMapper` covers shared cases (`EntityNotFound`, `InvalidEmail`, `HTTPException`, `RequestValidationError`); `DomainException` (`framework/domain/exception.py`) is the shared base for domain-level exceptions, though contexts are free to raise plain `Exception` subclasses too, as `IdentityExceptionMapper` does for `UserAlreadyExists`/`InvalidCredentials`.
+**How mapping works:** `ExceptionMapper` (`framework/infrastructure/http/exception_mapper.py`) is a strategy interface — `can_map(exception) -> bool` and `to_problem_detail(exception) -> ProblemDetail`. `register_exception_handlers(app)` (`framework/infrastructure/http/exception_handler.py`) registers FastAPI handlers for `RequestValidationError`, `HTTPException`, and the catch-all `Exception`; each resolves a `ProblemDetail` by walking the ordered `_EXCEPTION_MAPPERS` tuple — the first mapper whose `can_map` returns `True` wins. `FrameworkExceptionMapper` covers shared cases (`EntityNotFound`, `InvalidEmail`, `HTTPException`, `RequestValidationError`); `DomainException` (`framework/domain/exception.py`) is the shared base for domain-level exceptions, though contexts are free to raise plain `Exception` subclasses too.
 
-**Adding a new mapped exception** (following `IdentityExceptionMapper` in `identity/infrastructure/http/exception_mapper.py` as a template):
+**Adding a new mapped exception:**
 
-1. Define the exception in the relevant bounded context (e.g. `UserAlreadyExists` and `InvalidCredentials` live in `identity/application/command/`).
-2. List it in that context's `ExceptionMapper.can_map` and return its `ProblemDetail` from `to_problem_detail`:
+1. Define the exception in the relevant bounded context.
+2. Create an `ExceptionMapper` for that context; list the exception in `can_map` and return its `ProblemDetail` from `to_problem_detail`:
    ```python
-   case UserAlreadyExists():
+   case SomeContextException():
        return ProblemDetail(
-           "user-already-exists", "User Already Exists", 409,
-           str(exception), None, {"email": exception.email.as_string},
+           "some-context-exception", "Some Context Exception", 422,
+           str(exception), None, {},
        )
    ```
 3. Register the mapper in the `_EXCEPTION_MAPPERS` tuple in `framework/infrastructure/http/exception_handler.py` — order matters, since the first matching mapper wins.
