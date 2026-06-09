@@ -8,6 +8,7 @@ from fastapi.responses import JSONResponse
 from framework.infrastructure.http import ExceptionMapper, ProblemDetail
 from framework.infrastructure.http import FrameworkExceptionMapper
 from identity.infrastructure.http import IdentityExceptionMapper
+from patients.infrastructure.http import PatientsExceptionMapper
 
 logger = logging.getLogger("ExceptionHandler")
 
@@ -15,6 +16,7 @@ logger = logging.getLogger("ExceptionHandler")
 _EXCEPTION_MAPPERS: tuple[type(ExceptionMapper), ...] = (
     FrameworkExceptionMapper,
     IdentityExceptionMapper,
+    PatientsExceptionMapper,
 )
 
 

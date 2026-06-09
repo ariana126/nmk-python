@@ -10,6 +10,7 @@ load_dotenv()
 from framework.infrastructure.persistence.mapper import mapper_registry  # noqa: E402
 
 import identity.infrastructure.persistence.tables  # noqa: F401, E402
+import patients.infrastructure.persistence.tables  # noqa: F401, E402
 
 config = context.config
 

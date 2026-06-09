@@ -18,3 +18,9 @@ async def get_current_user_id(
             status_code=401, detail="The access token is invalid or has expired."
         )
     return user_id
+
+
+async def require_authentication(
+    _: Identity = Depends(get_current_user_id),
+) -> None:
+    pass

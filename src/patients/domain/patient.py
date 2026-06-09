@@ -26,23 +26,19 @@ class Patient(AggregateRoot):
 
     @staticmethod
     def register(full_name: str, date_of_birth: datetime, email: Email) -> "Patient":
-        patient = Patient(
-            Identity.new(),
-            full_name,
-            date_of_birth,
-            email,
-            []
-        )
+        patient = Patient(Identity.new(), full_name, date_of_birth, email, [])
         patient._record_that(PatientRegistered(patient.id))
         return patient
 
-    def record_vitals(self, hear_rate: HeartRate, systolic_blood_pressure: SystolicBloodPressure, temperature: Temperature, now_time: datetime) -> None:
+    def record_vitals(
+        self,
+        hear_rate: HeartRate,
+        systolic_blood_pressure: SystolicBloodPressure,
+        temperature: Temperature,
+        now_time: datetime,
+    ) -> None:
         vitals = Vitals(
-            Identity.new(),
-            hear_rate,
-            systolic_blood_pressure,
-            temperature,
-            now_time
+            Identity.new(), hear_rate, systolic_blood_pressure, temperature, now_time
         )
         self.__vitals.append(vitals)
         self._record_that(VitalsRecorded(vitals.id))
@@ -50,3 +46,15 @@ class Patient(AggregateRoot):
     @property
     def vitals(self) -> list[Vitals]:
         return self.__vitals
+
+    @property
+    def full_name(self) -> str:
+        return self.__full_name
+
+    @property
+    def email(self) -> Email:
+        return self.__email
+
+    @property
+    def date_of_birth(self) -> datetime:
+        return self.__date_of_birth

@@ -19,6 +19,8 @@ class FindAlertedPatientVitalsQueryHandler:
 
     async def handle(self, query: FindAlertedPatientVitalsQuery) -> list[Vitals]:
         patient: Patient = self.__repository.get(query.patient_id)
-        vitals: list[Vitals] = list(filter(lambda v: v.is_out_of_normal_range, patient.vitals))
+        vitals: list[Vitals] = list(
+            filter(lambda v: v.is_out_of_normal_range, patient.vitals)
+        )
         vitals.sort(key=lambda v: v.recorded_at)
         return vitals

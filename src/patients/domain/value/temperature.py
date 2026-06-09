@@ -9,8 +9,8 @@ class InvalidTemperature(DomainException):
         self.temperature = temperature
 
     @staticmethod
-    def provided(value: float) -> 'InvalidTemperature':
-        return InvalidTemperature(f'Invalid temperature provided: {value}', value)
+    def provided(value: float) -> "InvalidTemperature":
+        return InvalidTemperature(f"Invalid temperature provided: {value}", value)
 
 
 class Temperature(ValueObject):
@@ -19,7 +19,7 @@ class Temperature(ValueObject):
         self.__value = value
 
     @staticmethod
-    def from_float(value: float) -> 'Temperature':
+    def from_float(value: float) -> "Temperature":
         return Temperature(value)
 
     @property
@@ -30,3 +30,7 @@ class Temperature(ValueObject):
     def __validate_temperature(value: float) -> None:
         if 30.0 > value or 45.0 < value:
             raise InvalidTemperature.provided(value)
+
+    @property
+    def is_out_of_normal_range(self) -> bool:
+        return 36.0 > self.__value or 37.5 < self.__value

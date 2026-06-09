@@ -19,10 +19,11 @@ from framework.infrastructure.domain_event_logger import DomainEventLogger
 from identity import IdentityModule
 from framework.infrastructure import register_exception_handlers
 from identity.domain import UserRegistered
+from patients import PatientsModule
 
 
 class App:
-    __MODULES: tuple[Module] = (IdentityModule,)
+    __MODULES: tuple[Module] = (IdentityModule, PatientsModule)
 
     @staticmethod
     def boot() -> FastAPI:
@@ -52,7 +53,7 @@ class App:
         App.__boot_modules()
 
         app = FastAPI(
-            title="NMK API",
+            title="Nmk API",
             version="1.0.0",
             description="NMK backend — Identity and beyond.",
         )

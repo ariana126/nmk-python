@@ -145,6 +145,14 @@ _EXCEPTION_MAPPERS: tuple[type(ExceptionMapper), ...] = (
 
 ## 9. Database migration
 
+First, register the new tables in `migrations/env.py` so Alembic can detect them:
+
+```python
+import <context>.infrastructure.persistence.tables  # noqa: F401, E402
+```
+
+Then generate and apply the migration:
+
 ```bash
 make migration-create m="create <context> tables"
 make migrate
@@ -163,3 +171,16 @@ Verify the generated file in `migrations/versions/` before running.
   - Reuse steps from `features/step_definitions/common/` (e.g., `http_steps.py`, `auth_steps.py`) — they are loaded via `pytest_plugins` in `conftest.py`.
 - [ ] If you write new reusable steps, add them to a file in `features/step_definitions/common/` and register that module in `conftest.py`'s `pytest_plugins` list.
 - [ ] Run: `make bdd` (requires `make start-dev` to be running).
+
+---
+
+## 11. Final checklist
+
+Easy-to-miss wiring steps — verify these before calling the context done:
+
+- [ ] `migrations/env.py` — `import <context>.infrastructure.persistence.tables` added
+- [ ] `Module.get_routers()` — all routers returned
+- [ ] `src/app.py` — module appended to `App.__MODULES`
+- [ ] `framework/infrastructure/http/exception_handler.py` — `<Context>ExceptionMapper` added to `_EXCEPTION_MAPPERS` (if the context raises domain exceptions)
+- [ ] `src/app.py` — event listeners registered in `__register_event_listeners()` (if the context emits domain events)
+- [ ] Migration file in `migrations/versions/` reviewed and applied

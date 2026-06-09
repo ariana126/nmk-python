@@ -9,8 +9,10 @@ class InvalidSystolicBloodPressure(DomainException):
         self.value = value
 
     @staticmethod
-    def provided(value: int) -> 'InvalidSystolicBloodPressure':
-        return InvalidSystolicBloodPressure(f'Invalid systolic blood pressure: {value}', value)
+    def provided(value: int) -> "InvalidSystolicBloodPressure":
+        return InvalidSystolicBloodPressure(
+            f"Invalid systolic blood pressure: {value}", value
+        )
 
 
 class SystolicBloodPressure(ValueObject):
@@ -30,3 +32,7 @@ class SystolicBloodPressure(ValueObject):
     def __validate_value(value: int) -> None:
         if 50 > value > 300:
             raise InvalidSystolicBloodPressure.provided(value)
+
+    @property
+    def is_out_of_normal_range(self) -> bool:
+        return 140 < self.__value

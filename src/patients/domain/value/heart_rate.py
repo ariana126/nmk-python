@@ -9,8 +9,8 @@ class InvalidHeartRate(DomainException):
         self.rate = rate
 
     @staticmethod
-    def provided(rate: int) -> 'InvalidHeartRate':
-        return InvalidHeartRate(f'Invalid heart rate provided: {rate}', rate)
+    def provided(rate: int) -> "InvalidHeartRate":
+        return InvalidHeartRate(f"Invalid heart rate provided: {rate}", rate)
 
 
 class HeartRate(ValueObject):
@@ -26,3 +26,7 @@ class HeartRate(ValueObject):
     @property
     def as_int(self) -> int:
         return self.__value
+
+    @property
+    def is_out_of_normal_range(self) -> bool:
+        return 60 > self.__value or 100 < self.__value

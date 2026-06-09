@@ -11,6 +11,7 @@ from framework.infrastructure.persistence.mapper import mapper_registry
 pytest_plugins = [
     "features.step_definitions.common.http_steps",
     "features.step_definitions.common.auth_steps",
+    "features.step_definitions.patients.common_steps",
 ]
 
 

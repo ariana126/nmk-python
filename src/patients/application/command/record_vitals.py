@@ -29,6 +29,6 @@ class RecordVitalsCommandHandler(CommandHandler):
             command.heart_rate,
             command.systolic_blood_pressure,
             command.temperature,
-            self.__clock.now()
+            self.__clock.now(),
         )
         self.__repository.save(patient)

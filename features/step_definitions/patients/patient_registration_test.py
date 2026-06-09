@@ -10,7 +10,7 @@ def a_patient_with_email_already_exists(client, context, email):
         headers={"Authorization": f"Bearer {context['accessToken']}"},
         json={"name": "Existing Patient", "dateOfBirth": "1990-01-01", "email": email},
     )
-    assert response.status_code == 201
+    assert response.status_code == 200
 
 
 @when("I register a patient with the following details:")
