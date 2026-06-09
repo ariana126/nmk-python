@@ -15,7 +15,7 @@ class PatientsExceptionMapper(ExceptionMapper):
                     "patient-already-exists",
                     "Patient Already Exists",
                     409,
-                    str(exception)
+                    str(exception),
                 )
             case _:
                 raise RuntimeError(f"Unexpected exception: {exception}")

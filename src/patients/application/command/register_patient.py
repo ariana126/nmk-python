@@ -9,10 +9,11 @@ from framework.domain.value.email import Email
 from patients.domain import Patient
 from patients.domain.service import PatientRepository
 
+
 class PatientExists(RuntimeError):
     @staticmethod
-    def with_email(email: Email) -> 'PatientExists':
-        return PatientExists(f'Patient already exists for {email.as_string}')
+    def with_email(email: Email) -> "PatientExists":
+        return PatientExists(f"Patient already exists for {email.as_string}")
 
 
 @dataclass
@@ -36,5 +37,5 @@ class RegisterPatientCommandHandler(CommandHandler):
         return patient.id
 
     def __check_email_is_not_used(self, email: Email) -> None:
-        if not self.__repository.find_by_email(email) is None:
+        if self.__repository.find_by_email(email) is not None:
             raise PatientExists.with_email(email)

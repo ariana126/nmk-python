@@ -1,5 +1,6 @@
 from pytest_bdd import given, parsers, when
 
+
 def _parse_value(v: str):
     try:
         return int(v)
